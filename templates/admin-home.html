@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - User List</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .navbar-custom {
+      background-color: #20bc9c;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      color: white !important;
+    }
+    .dashboard-title {
+      margin: 30px 0;
+      text-align: center;
+      color: #2c3e50;
+    }
+    .btn-promote {
+      background-color: #f39c12;
+      color: white;
+    }
+    .btn-promote:hover {
+      background-color: #e67e22;
+    }
+    .btn-demote {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .btn-demote:hover {
+      background-color: #c0392b;
+    }
+.search-input {
+  max-width: 350px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  padding: 10px;
+}
+
+    .card-modern {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    }
+
+  </style>
+</head>
+<body>
+ 
+<!-- App -->
+<div id="app">
+      <nav class="navbar navbar-expand-lg navbar-custom justify-content-between px-4">
+      <a class="navbar-brand text-white" href="#">Euphoria Admin</a>
+      
+      <button class="btn btn-outline-light" @click="logout">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </nav>
+  <div class="container mt-4">
+
+<!-- Tab Navigation -->
+<div class="text-center mb-4">
+  <button
+    class="btn tab-button mx-1"
+    :class="['btn-outline-primary', { active: activeTab === 'users', 'btn-primary': activeTab === 'users' }]"
+    @click="activeTab = 'users'"
+  >
+    <i class="fas fa-users"></i> Kelola User
+  </button>
+
+  <button
+    class="btn tab-button mx-1"
+    :class="['btn-outline-success', { active: activeTab === 'galeri', 'btn-success': activeTab === 'galeri' }]"
+    @click="activeTab = 'galeri'"
+  >
+    <i class="fas fa-images"></i> Kelola Galeri
+  </button>
+
+  <button
+    class="btn tab-button mx-1"
+    :class="['btn-outline-warning', { active: activeTab === 'tiket', 'btn-warning': activeTab === 'tiket' }]"
+    @click="activeTab = 'tiket'"
+  >
+    <i class="fas fa-ticket-alt"></i> Kelola Tiket
+  </button>
+</div>
+
+<div v-if="loading" class="text-center mb-3">
+  <div class="spinner-border text-primary" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
+
+
+  <!-- Section: User List -->
+  <div v-if="activeTab === 'users'">
+    <h2 class="dashboard-title">Daftar Semua User</h2>
+    <div class="table-responsive mb-5">
+      <!-- Filter User -->
+<div class="text-center mb-3">
+  <input
+    type="text"
+    class="form-control search-input"
+    placeholder="Cari berdasarkan email, username, atau status..."
+    v-model="userSearch"
+  />
+</div>
+
+      <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+          
+<tr>
+    <th @click="sortUsers('email')" style="cursor: pointer;">
+      Email <span v-if="sortBy === 'email'">{{ sortAsc ? '▲' : '▼' }}</span>
+    </th>
+    <th @click="sortUsers('username')" style="cursor: pointer;">
+      Username <span v-if="sortBy === 'username'">{{ sortAsc ? '▲' : '▼' }}</span>
+    </th>
+    <th @click="sortUsers('status')" style="cursor: pointer;">
+      Status <span v-if="sortBy === 'status'">{{ sortAsc ? '▲' : '▼' }}</span>
+    </th>
+    <th>Aksi</th>
+  </tr>
+        </thead>
+        <tbody>
+          <tr v-for="user in filteredUsers" :key="user.email">
+            <td>{{ user.email }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.status }}</td>
+            <td>
+              <button v-if="user.status !== 'admin'" class="btn btn-promote btn-sm" @click="promoteUser(user.email)">
+                <i class="fas fa-user-shield"></i> Jadikan Admin
+              </button>
+              <button v-else class="btn btn-demote btn-sm" @click="demoteUser(user.email)">
+                <i class="fas fa-user-minus"></i> Cabut Admin
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section: Galeri -->
+  <div v-if="activeTab === 'galeri'">
+    <h2>Daftar Galeri</h2>
+
+    <!-- Tombol Tambah Galeri -->
+    <button class="btn btn-success mb-3" data-toggle="modal" data-target="#galeriModal">
+      <i class="fas fa-plus"></i> Tambah Galeri
+    </button>
+
+    <!-- Modal Tambah Galeri -->
+    <div class="modal fade" id="galeriModal" tabindex="-1" role="dialog" aria-labelledby="galeriModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form @submit.prevent="submitGaleri">
+            <div class="modal-header">
+              <h5 class="modal-title">Tambah Galeri</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Nama Artis</label>
+                <input type="text" class="form-control" v-model="newGaleri.nama_artis" required>
+              </div>
+              <div class="form-group">
+                <label>Detail</label>
+                <textarea class="form-control" v-model="newGaleri.detail" required></textarea>
+              </div>
+              <div class="form-group">
+                <label>Gambar</label>
+                <input type="file" @change="handleFileUpload" class="form-control" required>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Simpan</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Edit Galeri -->
+    <div class="modal fade" id="editGaleriModal" tabindex="-1" role="dialog" aria-labelledby="editGaleriModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <form @submit.prevent="updateGaleri">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit Galeri</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label>Nama Artis</label>
+                <input type="text" class="form-control" v-model="editGaleri.nama_artis" required>
+              </div>
+              <div class="form-group">
+                <label>Detail</label>
+                <textarea class="form-control" v-model="editGaleri.detail" required></textarea>
+              </div>
+              <div class="form-group">
+                <label>Ganti Gambar (Opsional)</label>
+                <input type="file" @change="onEditImageChange" class="form-control">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+              <button type="submit" class="btn btn-primary">Perbarui</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabel Galeri -->
+    <div class="table-responsive mt-4">
+      <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+          <tr>
+            <th>Gambar</th>
+            <th>Nama Artis</th>
+            <th>Detail</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in galeri" :key="item.id">
+            <td><img :src="'data:image/jpeg;base64,' + item.image" alt="Gambar Galeri" style="width: 100px;"></td>
+            <td>{{ item.nama_artis }}</td>
+            <td>{{ item.detail }}</td>
+            <td>
+              <button class="btn btn-sm btn-warning" @click="showEditForm(item)">Edit</button>
+              <button class="btn btn-sm btn-danger" @click="deleteGaleri(item.id)">Hapus</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- Section: Tiket -->
+<div v-if="activeTab === 'tiket'">
+  <h2>Manajemen Tiket</h2>
+
+  <!-- Tombol Tambah Tiket -->
+  <button class="btn btn-warning mb-3" data-toggle="modal" data-target="#tiketModal">
+    <i class="fas fa-plus"></i> Tambah Tiket
+  </button>
+
+<!-- Modal Tambah Tiket -->
+<div class="modal fade" id="tiketModal" tabindex="-1" role="dialog" aria-labelledby="tiketModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form @submit.prevent="submitTiket">
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Tiket</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nama Tiket</label>
+            <input type="text" class="form-control" v-model="newTiket.Tiket" required>
+          </div>
+          <div class="form-group">
+            <label>Jenis Tiket</label>
+            <input type="text" class="form-control" v-model="newTiket.Jenis_Tiket" required>
+          </div>
+          <div class="form-group">
+            <label>Stock</label>
+            <input type="number" class="form-control" v-model.number="newTiket.Stock" required>
+          </div>
+          <div class="form-group">
+            <label>Harga</label>
+            <input type="number" class="form-control" v-model.number="newTiket.Harga" required>
+          </div>
+          <div class="form-group">
+            <label>Hari (Days)</label>
+            <input type="text" class="form-control" v-model="newTiket.Days" required>
+          </div>
+          <div class="form-group">
+            <label>Deskripsi</label>
+            <textarea class="form-control" v-model="newTiket.Detail" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- Tabel Tiket -->
+<div class="table-responsive mt-4">
+  <table class="table table-bordered table-hover">
+    <thead class="thead-dark">
+      <tr>
+        <th>Nama Tiket</th>
+        <th>Jenis</th>
+        <th>Stock</th>
+        <th>Harga</th>
+        <th>Hari</th>
+        <th>Deskripsi</th>
+        <th>Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="t in tiket" :key="t.Id_Tiket">
+        <td>{{ t.Tiket }}</td>
+        <td>{{ t.Jenis_Tiket }}</td>
+        <td>{{ t.Stock }}</td>
+        <td>{{ t.Harga }}</td>
+        <td>{{ t.Days }}</td>
+        <td>{{ t.Detail }}</td>
+        <td>
+          <button class="btn btn-sm btn-primary mr-1" @click="showEditTiket(t)">Edit</button>
+          <button class="btn btn-sm btn-danger" @click="deleteTiket(t.Id_Tiket)">Hapus</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<!-- Modal Edit Tiket -->
+<div class="modal fade" id="editTiketModal" tabindex="-1" role="dialog" aria-labelledby="editTiketModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form @submit.prevent="updateTiket">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Tiket</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nama Tiket</label>
+            <input type="text" class="form-control" v-model="editTiket.Tiket" required>
+          </div>
+          <div class="form-group">
+            <label>Jenis Tiket</label>
+            <input type="text" class="form-control" v-model="editTiket.Jenis_Tiket" required>
+          </div>
+          <div class="form-group">
+            <label>Stock</label>
+            <input type="number" class="form-control" v-model="editTiket.Stock" required>
+          </div>
+          <div class="form-group">
+            <label>Harga</label>
+            <input type="number" class="form-control" v-model="editTiket.Harga" required>
+          </div>
+          <div class="form-group">
+            <label>Hari (Days)</label>
+            <input type="text" class="form-control" v-model="editTiket.Days" required>
+          </div>
+          <div class="form-group">
+            <label>Deskripsi</label>
+            <textarea class="form-control" v-model="editTiket.Detail" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <!-- Vue Logic -->
+<script>
+  new Vue({
+    el: "#app",
+
+    data: {
+      activeTab: 'users',
+      isLoggedIn: false,
+      users: [],
+      tiket: [],
+      galeri: [],
+      loading: false,
+      userSearch: '',
+      sortBy: 'email',        // kolom yang disortir
+      sortAsc: true,           // urutan A-Z (true) atau Z-A (false)
+    newTiket: {
+      Tiket: '',
+      Jenis_Tiket: '',
+      Stock: 0,
+      Harga: 0,
+      Days: '',
+      Detail: ''
+    },
+    editTiket: {
+      Id_Tiket: null,
+      Tiket: '',
+      Jenis_Tiket: '',
+      Stock: 0,
+      Harga: 0,
+      Days: '',
+      Detail: ''
+    },
+
+      newGaleri: {
+        nama_artis: '',
+        detail: '',
+        image: null
+      },
+      editGaleri: {
+        id: null,
+        nama_artis: '',
+        detail: '',
+        image: null
+      }
+    },
+    mounted() {
+      this.checkLoginStatus();
+      this.fetchUsers();
+      this.fetchGaleri();
+      this.fetchTikets();
+      this.loadActiveTabData();
+    },
+
+     watch: {
+    activeTab() {
+      this.loadActiveTabData();
+      }
+    },
+
+    computed: {
+  filteredUsers() {
+    const keyword = this.userSearch.toLowerCase();
+
+    let filtered = this.users.filter(user => {
+      return (
+        user.email.toLowerCase().includes(keyword) ||
+        user.username.toLowerCase().includes(keyword) ||
+        user.status.toLowerCase().includes(keyword)
+      );
+    });
+
+    return filtered.sort((a, b) => {
+      const fieldA = a[this.sortBy].toLowerCase();
+      const fieldB = b[this.sortBy].toLowerCase();
+      if (fieldA < fieldB) return this.sortAsc ? -1 : 1;
+      if (fieldA > fieldB) return this.sortAsc ? 1 : -1;
+      return 0;
+    });
+  }
+},
+    
+  methods: {
+
+    checkLoginStatus() {
+      const flag = localStorage.getItem("isLoggedIn") === "true";
+      const usr = localStorage.getItem("user");
+      this.isLoggedIn = flag;
+      this.user = usr ? JSON.parse(usr) : null;
+    },
+
+    logout() {
+    if (confirm("Yakin ingin logout?")) {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("user");
+      window.location.href = "login.html"; // sesuaikan nama file login jika berbeda
+    }
+  },
+
+    sortUsers(field) {
+    if (this.sortBy === field) {
+      this.sortAsc = !this.sortAsc;
+    } else {
+      this.sortBy = field;
+      this.sortAsc = true;
+    }
+  },
+
+switchTab(tab) {
+      this.activeTab = tab;
+      this.loadActiveTabData();
+    },
+    loadActiveTabData() {
+      if (this.activeTab === 'users') {
+        this.fetchUsers();
+      } else if (this.activeTab === 'galeri') {
+        this.fetchGaleri();
+      } else if (this.activeTab === 'tiket') {
+        this.fetchTikets();
+      }
+    },
+
+
+      // ==== USER MANAGEMENT ====
+fetchUsers() {
+      this.loading = true;
+      fetch("http://localhost:8000/api/users")
+        .then(res => res.json())
+        .then(data => this.users = data)
+        .catch(err => alert("Gagal memuat data user"))
+        .finally(() => this.loading = false);
+    },
+      promoteUser(email) {
+        if (!confirm(`Yakin ingin menjadikan ${email} sebagai admin?`)) return;
+
+        fetch("http://localhost:8000/api/user/promote", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        })
+          .then(res => res.json())
+          .then(data => {
+            alert(data.message);
+            this.fetchUsers();
+          })
+          .catch(err => {
+            alert("Gagal mempromosikan user");
+            console.error(err);
+          });
+      },
+      demoteUser(email) {
+        if (!confirm(`Yakin ingin mencabut status admin dari ${email}?`)) return;
+
+        fetch("http://localhost:8000/api/user/demote", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        })
+          .then(res => res.json())
+          .then(data => {
+            alert(data.message);
+            this.fetchUsers();
+          })
+          .catch(err => {
+            alert("Gagal mencabut admin");
+            console.error(err);
+          });
+      },
+
+      // ==== GALERI ====
+fetchGaleri() {
+      this.loading = true;
+      fetch("http://localhost:8000/api/Get_galeri")
+        .then(res => res.json())
+        .then(data => this.galeri = data)
+        .catch(err => alert("Gagal memuat galeri"))
+        .finally(() => this.loading = false);
+    },
+      handleFileUpload(event) {
+        this.newGaleri.image = event.target.files[0];
+      },
+      onEditImageChange(event) {
+        this.editGaleri.image = event.target.files[0];
+      },
+      resetGaleriForm() {
+        this.newGaleri = {
+          nama_artis: '',
+          detail: '',
+          image: null
+        };
+        // Reset input file secara manual jika dibutuhkan
+        const input = document.querySelector('#galeriModal input[type="file"]');
+        if (input) input.value = '';
+      },
+      submitGaleri() {
+        const formData = new FormData();
+        formData.append("nama_artis", this.newGaleri.nama_artis);
+        formData.append("detail", this.newGaleri.detail);
+        formData.append("image", this.newGaleri.image);
+
+        fetch("http://localhost:8000/api/galeri", {
+          method: "POST",
+          body: formData
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Failed to upload");
+            return res.json();
+          })
+          .then(data => {
+            alert(data.message);
+            this.resetGaleriForm();
+            this.fetchGaleri();
+            $('#galeriModal').modal('hide');
+          })
+          .catch(err => {
+            alert("Gagal menambahkan galeri");
+            console.error(err);
+          });
+      },
+      deleteGaleri(id) {
+        if (!confirm("Yakin ingin menghapus galeri ini?")) return;
+
+        fetch(`http://localhost:8000/api/Delete_galeri/${id}`, {
+          method: "DELETE"
+        })
+          .then(res => res.json())
+          .then(data => {
+            alert(data.message);
+            this.fetchGaleri();
+          })
+          .catch(err => {
+            alert("Gagal menghapus galeri");
+            console.error(err);
+          });
+      },
+      showEditForm(item) {
+        this.editGaleri = {
+          id: item.id,
+          nama_artis: item.nama_artis,
+          detail: item.detail,
+          image: null
+        };
+        $('#editGaleriModal').modal('show');
+      },
+updateGaleri() {
+      const formData = new FormData();
+      formData.append("nama_artis", this.editGaleri.nama_artis);
+      formData.append("detail", this.editGaleri.detail);
+      if (this.editGaleri.image) {
+        formData.append("image", this.editGaleri.image);
+      }
+
+      fetch(`http://localhost:8000/api/Update_galeri/${this.editGaleri.id}`, {
+        method: "PUT",
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.message || "Galeri diperbarui");
+          $('#editGaleriModal').modal('hide');
+          this.activeTab = '';
+          this.$nextTick(() => this.activeTab = 'galeri');
+        })
+        .catch(err => {
+          alert("Gagal memperbarui galeri");
+          console.error(err);
+        });
+    },
+      // ==== TIKET ====
+fetchTikets() {
+      this.loading = true;
+      fetch("http://localhost:8000/api/Get_tiket")
+        .then(res => res.json())
+        .then(data => this.tiket = data)
+        .catch(err => alert("Gagal memuat tiket"))
+        .finally(() => this.loading = false);
+    },
+resetTiketForm() {
+  this.newTiket = {
+    Tiket: '',
+    Jenis_Tiket: '',
+    Stock: 0,
+    Harga: 0,
+    Days: '',
+    Detail: ''
+  };
+},
+submitTiket() {
+  fetch("http://localhost:8000/api/Create_tiket", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(this.newTiket)
+  })
+    .then(res => {
+      if (!res.ok) throw new Error("Gagal menyimpan tiket");
+      return res.json();
+    })
+    .then(data => {
+      alert("Tiket berhasil ditambahkan");
+      this.resetTiketForm();
+      this.fetchTikets();
+      $('#tiketModal').modal('hide');
+    })
+    .catch(err => {
+      alert("Gagal menambahkan tiket");
+      console.error(err);
+    });
+},
+deleteTiket(id) {
+  if (!confirm("Yakin ingin menghapus tiket ini?")) return;
+
+  fetch(`http://localhost:8000/api/Delete_tiket/${id}`, {
+    method: "DELETE"
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || "Tiket dihapus");
+      this.fetchTikets();
+    })
+    .catch(err => {
+      alert("Gagal menghapus tiket");
+      console.error(err);
+    });
+},
+showEditTiket(t) {
+    this.editTiket = { ...t }; // Salin data tiket ke form
+    $('#editTiketModal').modal('show');
+  },
+updateTiket() {
+      fetch(`http://localhost:8000/api/Update_tiket/${this.editTiket.Id_Tiket}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this.editTiket)
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert("Tiket berhasil diperbarui");
+          $('#editTiketModal').modal('hide');
+          // Trigger reload data dengan cara switch tab
+          this.activeTab = ''; // reset tab
+          this.$nextTick(() => this.activeTab = 'tiket'); // trigger re-fetch
+        })
+        .catch(err => {
+          alert("Gagal memperbarui tiket");
+          console.error(err);
+        });
+    }
+
+    }
+
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembelian Tiket Event</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Margarine&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: url("gambar/Backgroundd.jpg");
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        #app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+    
+        .header-img {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .ticket-card {
+            background: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .ticket-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+    
+        .ticket-card h5 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    
+        .ticket-card .badge {
+            font-size: 14px;
+        }
+    
+        .ticket-card .text-muted {
+            font-size: 16px;
+        }
+    
+        .ticket-card .text-danger {
+            font-size: 22px;
+            font-weight: bold;
+        }
+    
+        .btn-buy-ticket {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            padding: 10px 20px;
+            transition: background-color 0.3s ease-in-out;
+        }
+    
+        .btn-buy-ticket:hover {
+            background-color: #0056b3;
+        }
+    
+        .btn-link {
+            color: #007bff;
+            font-size: 16px;
+            text-decoration: none;
+        }
+    
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+    
+        .ticket-detail {
+            display: none;
+            color: #000000; /* Ubah warna tulisan detail menjadi putih */
+        }
+    
+        .ticket-detail.show {
+            display: block;
+        }
+
+        body, .navbar-brand, .navbar-nav .nav-link {
+            font-family: 'Margarine', cursive;
+        }
+
+        body, .navbar-brand, .navbar-nav .nav-link {
+            font-family: 'Margarine', cursive;
+        }
+
+        .navbar-custom {
+            background-color: #20bc9c;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .navbar-nav .nav-link {
+            color: black;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .navbar-custom .navbar-nav .nav-link:hover {
+            color: white;
+        }
+
+        .navbar-custom .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .navbar-custom .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+
+        .btn-partnership {
+            background-color: #ffd700;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .btn-partnership:hover {
+            background-color: #ffcf33;
+            color: #000;
+        }
+
+        body, .footer {
+      font-family: 'Margarine', cursive;
+    }
+    .footer {
+      background-color: #20bc9c;
+      color: black;
+      padding: 40px 0 20px;
+      margin-top: auto;
+    }
+    .footer a {
+      color: #f8f9fa;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      color: #adb5bd;
+    }
+    .footer .social-icons a {
+      font-size: 24px;
+      margin: 0 15px;
+      color: white;
+    }
+    .footer .social-icons a:hover {
+      color: #adb5bd;
+    }
+    .footer .social-icons img {
+      width: 40px; /* Ubah ukuran lebar sesuai kebutuhan */
+      height: 40px; /* Ubah ukuran tinggi sesuai kebutuhan */
+    }
+
+    </style>
+    
+</head>
+<body>
+<div id="app">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Euphoria 2025</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
+      aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="index.html">Home</a>
+        </li>
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Get Ticket 
+  </a>
+  <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+    <a class="dropdown-item" 
+       v-for="tiket in tikets" 
+       :key="tiket.Id_Tiket" 
+       :href="'Tiket.html?id=' + tiket.Id_Tiket">
+      {{ tiket.Days }}
+    </a>
+  </div>
+</li>
+        <li class="nav-item">
+          <a class="nav-link" href="galeri.html">Line Up</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="about.html">About</a>
+        </li>
+      </ul>
+      <!-- Login Controls -->
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item" v-if="isLoggedIn">
+          <a class="nav-link" href="profile.html">Profile</a>
+        </li>
+        <li class="nav-item" v-if="isLoggedIn">
+          <button class="btn btn-outline-light" @click="logout">Logout</button>
+        </li>
+        <li class="nav-item" v-else>
+          <button class="btn btn-outline-light" @click="goToLogin">Login</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+<div class="container my-5">
+  <div class="text-center">
+    <h2>Tiket untuk Hari: {{ selectedDay }}</h2>
+    <hr>
+  </div>
+
+  <div v-if="tiketList.length > 0">
+    <div class="row">
+      <div class="col-md-6 mb-4" v-for="item in tiketList" :key="item.Id_Tiket">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5>{{ item.Jenis_Tiket }}</h5>
+          </div>
+          <div class="card-body">
+            <p><strong>Detail:</strong> {{ item.Detail }}</p>
+            <p><strong>Harga:</strong> {{ item.Harga }}</p>
+            <p><strong>Stok Tersedia:</strong> {{ item.Stock }}</p>
+            <button class="btn btn-success" :disabled="item.Stok <= 0" @click="openModal(item)">
+              {{ item.Stock > 0 ? 'Lanjutkan Pembayaran' : 'Stok Habis' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div v-else>
+      <p class="text-danger text-center">Tiket tidak ditemukan.</p>
+    </div>
+  </div>
+
+<!-- Modal Checkout -->
+<div class="modal fade" id="checkoutModal" tabindex="-1" role="dialog" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="checkoutModalLabel">Konfirmasi Pembelian Tiket</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Email Pembeli:</strong> {{ user?.email || user?.Email || 'Tidak tersedia' }}</p>
+        <p><strong>Jenis Tiket:</strong> {{ selectedTicket?.Jenis_Tiket }}</p>
+        <p><strong>Detail:</strong> {{ selectedTicket?.Detail }}</p>
+        <p><strong>Harga per Tiket:</strong> Rp {{ selectedTicket?.Harga }}</p>
+        <p><strong>Stok Tersedia:</strong> {{ selectedTicket?.Stock }}</p>
+
+        <div class="form-group">
+          <label for="jumlahTiket">Jumlah Tiket:</label>
+          <input type="number" class="form-control" id="jumlahTiket" v-model.number="jumlahTiket"
+            :min="1" :max="selectedTicket?.Stock || 1" />
+        </div>
+
+        <!-- 🔽 Dropdown Metode Pembayaran -->
+        <div class="form-group mt-3">
+          <label for="metodePembayaran">Metode Pembayaran:</label>
+          <select class="form-control" id="metodePembayaran" v-model="metodePembayaran" required>
+            <option disabled value="">Pilih metode pembayaran</option>
+            <option value="Transfer Bank">Transfer Bank</option>
+            <option value="QRIS">QRIS</option>
+            <option value="E-Wallet">E-Wallet</option>
+          </select>
+        </div>
+
+        <p class="mt-3"><strong>Total Harga:</strong> Rp {{ totalHarga }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
+        <button class="btn btn-primary"
+          @click="lanjutkanCheckout"
+          :disabled="jumlahTiket < 1 || jumlahTiket > selectedTicket?.Stock || !metodePembayaran">
+          Checkout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4">
+          <h5>About Us</h5>
+          <p>Selamat datang di Europhia 2024! Nikmati tiga hari penuh musik spektakuler dengan tiga artis terbaik setiap harinya. Bergabunglah dengan kami dan rasakan momen tak terlupakan di Euphhoria 2024!</p>
+        </div>
+        <div class="col-md-4">
+          <h5>Social Media</h5>
+          <ul class="list-unstyled social-icons">
+            <a href="#"><img src="gambar/ig logo (2).png" alt="Instagram"></a>
+            <a href="#"><img src="gambar/facebook logo (2).png" alt="Facebook"></a>
+            <a href="#"><img src="gambar/X-Logo.png" alt="X"></a>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h5>Contact Us</h5>
+          <p>
+            <i class="fas fa-map-marker-alt"></i> Madani , depok, Indonesia<br>
+            <i class="fas fa-phone"></i> (123) 456-7890<br>
+            <i class="fas fa-envelope"></i> info@euprohia.com
+          </p>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12 text-center">
+          <p>&copy; 2025 Your Company. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script>
+const app = Vue.createApp({
+  data() {
+    return {
+      isLoggedIn: false,
+      user: null,
+      tikets:[],
+      tiketList: [],
+      selectedDay: "",
+      selectedTicket: null,
+      jumlahTiket: 1,
+      metodePembayaran: ""
+    };
+  },
+
+  computed: {
+    totalHarga() {
+      if (this.selectedTicket && this.jumlahTiket) {
+        return this.jumlahTiket * parseInt(this.selectedTicket.Harga);
+      }
+      return 0;
+    }
+  },
+
+  mounted() {
+    this.checkLoginStatus();
+    this.loadTiketByDay();
+    this.fetchTikets();
+  },
+
+  methods: {
+fetchTikets() {
+  fetch("http://localhost:8000/api/tiket_per_day")
+    .then(res => res.json())
+    .then(data => {
+      this.tikets = data;
+    })
+    .catch(err => {
+      console.error("Gagal memuat data tiket:", err);
+    });
+},
+
+checkLoginStatus() {
+  const flag = localStorage.getItem("isLoggedIn") === "true";
+  const storedUser = localStorage.getItem("user");
+  this.isLoggedIn = flag;
+
+  if (flag && storedUser) {
+    const parsedUser = JSON.parse(storedUser);
+    const userEmail = parsedUser.email || parsedUser.Email; // ✅ support dua format
+
+    fetch(`http://localhost:8000/api/user/${userEmail}`)
+      .then(res => res.json())
+      .then(data => {
+        this.user = data; // simpan user dengan field 'email'
+      })
+      .catch((err) => {
+        console.error("Gagal mengambil data user:", err);
+        this.user = null;
+      });
+  }
+},
+
+
+    logout() {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("user");
+      this.isLoggedIn = false;
+      this.user = null;
+      window.location.href = "index.html";
+    },
+
+    goToLogin() {
+      window.location.href = "login.html";
+    },
+
+    loadTiketByDay() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (id) {
+    // Ambil tiket berdasarkan ID dulu
+    fetch(`http://localhost:8000/api/tiket/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Tiket tidak ditemukan");
+        return res.json();
+      })
+      .then(selected => {
+        this.selectedDay = selected.Days;
+
+        // Setelah dapat hari nya, ambil semua tiket dan filter yang sama Days
+        fetch("http://localhost:8000/api/Get_tiket")
+          .then(res => res.json())
+          .then(allTickets => {
+            this.tiketList = allTickets.filter(item => item.Days === selected.Days);
+          })
+          .catch(err => {
+            console.error("Gagal mengambil daftar tiket:", err);
+          });
+      })
+      .catch(err => {
+        console.error("Gagal mengambil tiket berdasarkan ID:", err);
+      });
+  }
+},
+
+
+    openModal(ticket) {
+      if (!this.isLoggedIn) {
+        alert("Silakan login terlebih dahulu untuk melanjutkan pembelian.");
+        this.goToLogin();
+        return;
+      }
+      this.selectedTicket = ticket;
+      this.jumlahTiket = 1;
+      $('#checkoutModal').modal('show');
+    },
+
+    lanjutkanCheckout() {
+      if (!this.selectedTicket || this.jumlahTiket < 1 || this.jumlahTiket > this.selectedTicket.Stock) {
+        alert("Jumlah tiket tidak valid.");
+        return;
+      }
+
+      const checkoutData = {
+        email: this.user?.email || this.user?.Email,
+        Id_Tiket: this.selectedTicket.Id_Tiket,
+        Jenis_Tiket: this.selectedTicket.Jenis_Tiket,
+        Harga: this.selectedTicket.Harga,
+        jumlah: this.jumlahTiket,
+        total: this.totalHarga,
+        metode: this.metodePembayaran
+      };
+
+      // Simpan ke localStorage dan redirect ke halaman checkout
+      localStorage.setItem("checkoutData", JSON.stringify(checkoutData));
+      window.location.href = "Chekout.html";
+    }
+  }
+});
+
+app.mount('#app');
+</script>
+
+</body>
+</html>
